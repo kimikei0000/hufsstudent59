@@ -34,7 +34,7 @@
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, set, update, get, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getDatabase, ref, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
         // Firebase 설정
         const firebaseConfig = {
@@ -48,7 +48,6 @@
             measurementId: "G-QXKHYTXBSS"
         };
 
-        // Firebase 초기화
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
@@ -59,7 +58,6 @@
         ];
         let hasVoted = false;
 
-        // DOM에 후보 버튼 추가
         function renderCandidates() {
             const candidateList = document.getElementById("candidates");
             candidates.forEach((candidate, index) => {
@@ -81,44 +79,67 @@
 
             const candidateName = candidates[candidateIndex];
             const candidateRef = ref(database, 'votes/' + candidateName);
+            console.log("투표 중: " + candidateName);
             runTransaction(candidateRef, (currentVotes) => {
+                console.log("현재 표 수: " + (currentVotes || 0));
                 return (currentVotes || 0) + 1;
             })
-            .then(() => alert(`한국외국어대학교 제18대 총장 모의 선출에 ${candidateName}을 선택하셨습니다.`))
+            .then(() => {
+                console.log("투표 완료: " + candidateName);
+                alert(`한국외국어대학교 제18대 총장 모의 선출에 ${candidateName}을 선택하셨습니다.`);
+            })
             .catch(err => console.error("Database Error", err));
         }
 
         function showResults() {
-            const password = prompt("투표 결과를 보려면 암호를 입력하세요:");
+        const password = prompt("투표 결과를 보려면 암호를 입력하세요:");
             if (password === "hufsmockvote") {
-                const votesRef = ref(database, 'votes');
-                get(votesRef).then(snapshot => {
-                    let results = "투표 결과:\n\n";
+        const votesRef = ref(database, 'votes');
+        console.log("결과 가져오는 중...");
+        get(votesRef)
+            .then(snapshot => {
+                if (snapshot.exists()) {
+                    let results = "<h2>투표 결과:</h2>";
                     snapshot.forEach(childSnapshot => {
                         const candidateName = childSnapshot.key;
                         const voteCount = childSnapshot.val();
-                        results += `${candidateName}: ${voteCount}표\n`;
+                        console.log(candidateName + ": " + voteCount);
+                        results += `${candidateName}: ${voteCount}표<br>`;
                     });
-                    alert(results);
-                }).catch(err => console.error("결과 가져오기 오류:", err));
-            } else {
-                alert("암호가 틀렸습니다.");
+                    // 결과를 새로운 HTML 창에 표시
+                    const resultWindow = window.open("", "결과", "width=400,height=600");
+                    resultWindow.document.write(results);
+                } else {
+                    console.log("투표 데이터 없음");
+                    alert("현재 투표 데이터가 없습니다.");
+                }
+            })
+            .catch(err => console.error("결과 가져오기 오류:", err));
+        } else {
+            alert("암호가 틀렸습니다.");
             }
-        }
+    }
 
         function resetVotes() {
             const password = prompt("투표 데이터를 초기화하려면 암호를 입력하세요:");
             if (password === "hufsmockvote") {
                 const votesRef = ref(database, 'votes');
-                set(votesRef, null) // 데이터를 초기화
-                    .then(() => alert("투표 데이터가 초기화되었습니다."))
+                console.log("투표 데이터 초기화 중...");
+                set(votesRef, null)
+                    .then(() => {
+                        console.log("투표 데이터 초기화 완료");
+                        alert("투표 데이터가 초기화되었습니다.");
+                    })
                     .catch(err => console.error("초기화 오류:", err));
             } else {
                 alert("암호가 틀렸습니다.");
             }
         }
 
-        // 페이지 로드 시 후보 렌더링
+        window.vote = vote;
+        window.showResults = showResults;
+        window.resetVotes = resetVotes;
+
         window.onload = () => {
             renderCandidates();
         };
