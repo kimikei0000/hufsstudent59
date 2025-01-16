@@ -3,10 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>모의 총장 선거</title>
+    <title>제18대 한국외대 모의 총장 선거</title>
+    <style>
+        body {
+            margin: 0 auto;
+            max-width: 600px;
+            font-family: Arial, sans-serif;
+        }
+        #candidates li {
+            list-style-type: none;
+            margin-bottom: 15px; /* 버튼 간 간격 */
+        }
+        #candidates button {
+            width: 100%; /* 버튼 너비 */
+            padding: 15px; /* 버튼 높이 증가 */
+            font-size: 18px; /* 버튼 텍스트 크기 */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        #candidates button:hover {
+            background-color: #e0e0e0;
+        }
+        .warning {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getDatabase, ref, set, update, get, increment } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
         // Firebase 설정
         const firebaseConfig = {
@@ -20,15 +48,29 @@
             measurementId: "G-QXKHYTXBSS"
         };
 
+        // Firebase 초기화
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
         const candidates = [
             "후보 1번", "후보 2번", "후보 3번", "후보 4번", "후보 5번", "후보 6번", 
             "후보 7번", "후보 8번", "후보 9번", "후보 10번", "후보 11번", "후보 12번", 
-            "후보 13번", "후보 14번", "후보 15번"
+            "후보 13번", "후보 14번", "후보 15번", "후보 16번"
         ];
         let hasVoted = false;
+
+        // DOM에 후보 버튼 추가
+        function renderCandidates() {
+            const candidateList = document.getElementById("candidates");
+            candidates.forEach((candidate, index) => {
+                const li = document.createElement("li");
+                const button = document.createElement("button");
+                button.textContent = candidate;
+                button.onclick = () => vote(index);
+                li.appendChild(button);
+                candidateList.appendChild(li);
+            });
+        }
 
         function vote(candidateIndex) {
             if (hasVoted) {
@@ -39,9 +81,9 @@
 
             const candidateName = candidates[candidateIndex];
             const candidateRef = ref(database, 'votes/' + candidateName);
-            update(candidateRef, { votes: incrementValue(candidateRef) })
-                .then(() => alert(`${candidateName}에 투표하셨습니다!`))
-                .catch(err => console.error("Database Error:", err));
+            update(candidateRef, { votes: increment(1) })
+                .then(() => alert(`한국외국어대학교 제18대 총장 모의 선출에 ${candidateName}을 선택하셨습니다.`))
+                .catch(err => console.error("Database Error", err));
         }
 
         function showResults() {
@@ -49,11 +91,11 @@
             if (password === "hufsmockvote") {
                 const votesRef = ref(database, 'votes');
                 get(votesRef).then(snapshot => {
-                    let results = "투표 결과:\\n\\n";
+                    let results = "투표 결과:\n\n";
                     snapshot.forEach(childSnapshot => {
                         const candidateName = childSnapshot.key;
                         const voteCount = childSnapshot.val();
-                        results += `${candidateName}: ${voteCount}표\\n`;
+                        results += `${candidateName}: ${voteCount}표\n`;
                     });
                     alert(results);
                 }).catch(err => console.error("결과 가져오기 오류:", err));
@@ -73,20 +115,17 @@
                 alert("암호가 틀렸습니다.");
             }
         }
+
+        // 페이지 로드 시 후보 렌더링
+        window.onload = () => {
+            renderCandidates();
+        };
     </script>
 </head>
 <body>
-    <h1>모의 총장 선거</h1>
-    <p>아래에서 후보를 선택하세요:</p>
-    <div id="candidates">
-        <ul>
-            <script>
-                candidates.forEach((candidate, index) => {
-                    document.write(`<li><button onclick="vote(${index})">${candidate}</button></li>`);
-                });
-            </script>
-        </ul>
-    </div>
+    <h1>제18대 한국외대 모의 총장 선거</h1>
+    <p class="warning">*후보 번호를 누르면 바로 표가 집계됩니다.</p>
+    <ul id="candidates"></ul>
     <br>
     <button onclick="showResults()">결과 보기 (관리자 전용)</button>
     <button onclick="resetVotes()">투표 초기화 (관리자 전용)</button>
