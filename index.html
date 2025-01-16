@@ -1,30 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mock Presidential Election</title>
+    <title>모의 총장 선거</title>
     <script>
-        const candidates = ["Candidate 1", "Candidate 2", "Candidate 3", "Candidate 4", "Candidate 5", "Candidate 6"];
+        const candidates = [
+            "후보 1번", "후보 2번", "후보 3번", "후보 4번", "후보 5번", "후보 6번", 
+            "후보 7번", "후보 8번", "후보 9번", "후보 10번", "후보 11번", "후보 12번", 
+            "후보 13번", "후보 14번", "후보 15번"
+        ];
         const votes = Array(candidates.length).fill(0);
+        let hasVoted = false;
 
         function vote(candidateIndex) {
+            if (hasVoted) {
+                alert("이미 투표하셨습니다. 한 번만 투표할 수 있습니다.");
+                return;
+            }
             votes[candidateIndex]++;
-            alert(`You voted for ${candidates[candidateIndex]}!`);
+            hasVoted = true;
+            alert(`${candidates[candidateIndex]}에 투표하셨습니다!`);
         }
 
         function showResults() {
-            let results = "Election Results:\n\n";
-            candidates.forEach((candidate, index) => {
-                results += `${candidate}: ${votes[index]} votes\n`;
-            });
-            alert(results);
+            const password = prompt("투표 결과를 보려면 암호를 입력하세요:");
+            if (password === "hufsmockvote") { // 암호 설정
+                let results = "투표 결과:\n\n";
+                candidates.forEach((candidate, index) => {
+                    results += `${candidate}: ${votes[index]}표\n`;
+                });
+                alert(results);
+            } else {
+                alert("암호가 틀렸습니다.");
+            }
         }
     </script>
 </head>
 <body>
-    <h1>Mock Presidential Election</h1>
-    <p>Please select your candidate:</p>
+    <h1>모의 총장 선거</h1>
+    <p>아래에서 후보를 선택하세요:</p>
     <div id="candidates">
         <ul>
             <script>
@@ -35,6 +50,6 @@
         </ul>
     </div>
     <br>
-    <button onclick="showResults()">View Results (Admin Only)</button>
+    <button onclick="showResults()">결과 보기 (관리자 전용)</button>
 </body>
 </html>
