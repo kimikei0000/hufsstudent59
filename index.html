@@ -1,9 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Presidential Election</title>
+    <script>
+        const candidates = ["Candidate 1", "Candidate 2", "Candidate 3", "Candidate 4", "Candidate 5", "Candidate 6"];
+        const votes = Array(candidates.length).fill(0);
+
+        function vote(candidateIndex) {
+            votes[candidateIndex]++;
+            alert(`You voted for ${candidates[candidateIndex]}!`);
+        }
+
+        function showResults() {
+            let results = "Election Results:\n\n";
+            candidates.forEach((candidate, index) => {
+                results += `${candidate}: ${votes[index]} votes\n`;
+            });
+            alert(results);
+        }
+    </script>
 </head>
 <body>
-    <h1>Hello, world!</h1>
+    <h1>Mock Presidential Election</h1>
+    <p>Please select your candidate:</p>
+    <div id="candidates">
+        <ul>
+            <script>
+                candidates.forEach((candidate, index) => {
+                    document.write(`<li><button onclick="vote(${index})">${candidate}</button></li>`);
+                });
+            </script>
+        </ul>
+    </div>
+    <br>
+    <button onclick="showResults()">View Results (Admin Only)</button>
 </body>
 </html>
