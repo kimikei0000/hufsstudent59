@@ -34,7 +34,7 @@
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, set, update, get, increment } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        import { getDatabase, ref, set, update, get, runTransaction } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 
         // Firebase 설정
         const firebaseConfig = {
@@ -81,9 +81,11 @@
 
             const candidateName = candidates[candidateIndex];
             const candidateRef = ref(database, 'votes/' + candidateName);
-            update(candidateRef, { votes: increment(1) })
-                .then(() => alert(`한국외국어대학교 제18대 총장 모의 선출에 ${candidateName}을 선택하셨습니다.`))
-                .catch(err => console.error("Database Error", err));
+            runTransaction(candidateRef, (currentVotes) => {
+                return (currentVotes || 0) + 1;
+            })
+            .then(() => alert(`한국외국어대학교 제18대 총장 모의 선출에 ${candidateName}을 선택하셨습니다.`))
+            .catch(err => console.error("Database Error", err));
         }
 
         function showResults() {
